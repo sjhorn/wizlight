@@ -384,7 +384,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
 
 Original C++ implementation Copyright (c) 2022 Sri Balaji S.
 Dart port Copyright (c) 2025.

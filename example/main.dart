@@ -1,11 +1,5 @@
-/***************************************************************************
- *  Project                WIZLIGHT
- *
- * Copyright (C) 2025 , Dart port
- *
- * Example demonstrating the WizLight package usage
- *
- ***************************************************************************/
+// Example demonstrating the WizLight package usage.
+// See LICENSE file for licensing details.
 
 import 'package:wizlight/wizlight.dart';
 

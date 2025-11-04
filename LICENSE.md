@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 Dart port
+Copyright (c) 2025 Dart port Scott Horn
 Original C++ code Copyright (c) 2022 Sri Balaji S
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

@@ -1,11 +1,5 @@
-/***************************************************************************
- *  Project                WIZLIGHT
- *
- * Copyright (C) 2025 , Dart port
- *
- * Unit tests for Bulb class functionality
- *
- ***************************************************************************/
+// Unit tests for Bulb class functionality.
+// See LICENSE file for licensing details.
 
 import 'dart:convert';
 import 'package:test/test.dart';

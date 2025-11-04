@@ -1,11 +1,5 @@
-/***************************************************************************
- *  Project                WIZLIGHT
- *
- * Copyright (C) 2025 , Dart port
- *
- * Unit tests for WizControl class functionality
- *
- ***************************************************************************/
+// Unit tests for WizControl class functionality.
+// See LICENSE file for licensing details.
 
 import 'package:test/test.dart';
 import 'package:wizlight/src/wiz_control.dart';
