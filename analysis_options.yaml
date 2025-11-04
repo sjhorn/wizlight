@@ -1,0 +1,9 @@
+include: package:lints/recommended.yaml
+
+linter:
+  rules:
+    - prefer_const_constructors
+    - prefer_final_fields
+    - unnecessary_this
+    - prefer_single_quotes
+    - sort_pub_dependencies

@@ -1,0 +1,44 @@
+# Dart/Flutter build artifacts
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# Dart pub files
+pubspec.lock
+
+# Test coverage
+coverage/
+.test_coverage.dart
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# wizlightcpp - C++ source used as reference
+wizlightcpp/
+
+# Claude AI files
+.claude/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*~
