@@ -6,7 +6,7 @@ A dart package for controlling WiZ smart devices over UDP. This is a port of the
 
 ## 🌟 New Features
 
-This is a ** rewrite** with features from pywizlight:
+This is a **rewrite** with features from pywizlight:
 - ✨ **API** with `PilotBuilder` and `PilotParser`
 - 🔔 **Push Updates** - Real-time state change notifications
 - 🎨 **Extended Colors** - RGBW, RGBWW, individual white LED control
@@ -496,7 +496,7 @@ Dart port © 2025
 
 ## Changelog
 
-### v2.0.0 - Complete pywizlight Port
+### v2.0.0 - pywizlight Port
 
 **Major Features:**
 - ✨ Modern API with `PilotBuilder` and `PilotParser`
