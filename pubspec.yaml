@@ -1,6 +1,6 @@
 name: wizlight
-description: A Dart package for controlling WiZ smart light bulbs over UDP using JSON protocol. Port of wizlightcpp with support for discovery, color control, brightness, scenes, and device management.
-version: 1.0.0
+description: A comprehensive Dart package for controlling WiZ smart devices over UDP. Complete port of pywizlight with push updates, extended color modes, capability detection, and support for all WiZ device types.
+version: 2.0.0
 homepage: https://github.com/sjhorn/wizlight
 repository: https://github.com/sjhorn/wizlight
 

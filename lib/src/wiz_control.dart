@@ -1,8 +1,10 @@
 // Dart port of wizlightcpp - https://github.com/srisham/wizlightcpp
 // See LICENSE file for licensing details.
 
+import 'dart:convert';
 import 'dart:io';
 import 'bulb.dart';
+import 'discovery.dart';
 
 /// Supported WiZ commands
 enum WizCmd {
@@ -188,7 +190,15 @@ Try 'wizlight $cmd --help' for help.
         } else {
           String? bCastIp;
           if (_checkArgOptions(args, cmd, '--bcast', (val) => bCastIp = val)) {
-            ret = await _bulb.discover(bCastIp!);
+            // Use the new discovery module to find all bulbs
+            print('Search for bulbs in $bCastIp ... ');
+            final bulbs = await discoverBulbs(broadcastAddress: bCastIp!);
+            // Format output to match Python: {'ip_address': '...', 'mac_address': '...'}
+            final buffer = StringBuffer();
+            for (final bulb in bulbs) {
+              buffer.writeln("{'ip_address': '${bulb.ip}', 'mac_address': '${bulb.mac}'}");
+            }
+            ret = buffer.toString();
           }
         }
         break;
@@ -325,7 +335,15 @@ Try 'wizlight $cmd --help' for help.
       case WizCmd.discover:
         stdout.write('Enter the broadcast IP Address: ');
         final bcastIp = stdin.readLineSync() ?? '';
-        ret = await _bulb.discover(bcastIp);
+        // Use the new discovery module to find all bulbs
+        print('Search for bulbs in $bcastIp ... ');
+        final bulbs = await discoverBulbs(broadcastAddress: bcastIp);
+        // Format output to match Python: {'ip_address': '...', 'mac_address': '...'}
+        final buffer = StringBuffer();
+        for (final bulb in bulbs) {
+          buffer.writeln("{'ip_address': '${bulb.ip}', 'mac_address': '${bulb.mac}'}");
+        }
+        ret = buffer.toString();
         break;
 
       case WizCmd.on:
@@ -357,7 +375,8 @@ Try 'wizlight $cmd --help' for help.
         break;
 
       case WizCmd.getsystemconfig:
-        ret = await _bulb.getSystemConfig();
+        final config = await _bulb.getSystemConfig();
+        ret = config != null ? jsonEncode(config) : '';
         break;
 
       case WizCmd.setbrightness:

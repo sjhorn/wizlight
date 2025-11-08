@@ -34,6 +34,9 @@ Thumbs.db
 # wizlightcpp - C++ source used as reference
 wizlightcpp/
 
+# pywizlight - Python source used as reference
+pywizlight/
+
 # Claude AI files
 .claude/
 

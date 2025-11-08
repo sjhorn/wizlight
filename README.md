@@ -1,28 +1,39 @@
 # WizLight - Dart Package
 
-A comprehensive Dart package for controlling WiZ smart light bulbs over UDP using the WiZ protocol. This is a port of the [wizlightcpp](https://github.com/srisham/wizlightcpp) C++ implementation.
+A dart package for controlling WiZ smart devices over UDP. This is a port of the popular [pywizlight](https://github.com/sbidy/pywizlight) Python library, originally based on [wizlightcpp](https://github.com/srisham/wizlightcpp).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+## 🌟 New Features
 
-- **Device Discovery**: Find WiZ bulbs on your network via broadcast
-- **Basic Controls**: Turn lights on/off
-- **Brightness Control**: Adjust dimming from 0-100%
-- **Color Control**: Set RGB colors (0-255 per channel) or color temperature (1000-8000K)
-- **Animation Control**: Set animation speed (0-100%) and preset scenes (32 scenes available)
-- **Device Information**: Query device metadata, WiFi, system, and user configuration
-- **Device Management**: Reboot devices remotely
-- **CLI Tool**: Command-line interface for easy bulb control
-- **Type Safe**: Full type safety with null-safety support
+This is a ** rewrite** with features from pywizlight:
+- ✨ **API** with `PilotBuilder` and `PilotParser`
+- 🔔 **Push Updates** - Real-time state change notifications
+- 🎨 **Extended Colors** - RGBW, RGBWW, individual white LED control
+- 🔍 **Capability Detection** - Automatic bulb type and feature detection
+- ⚡ **Robust Communication** - Progressive backoff retry (6 attempts over 13s)
+- 🔌 **Extended Device Support** - Smart plugs, ceiling fans, all bulb types
+- 📊 **Power Monitoring** - Wattage tracking for smart plugs
+- 🌀 **Fan Control** - Full ceiling fan controller support
+
+## Supported Devices
+
+| Device Type | Features |
+|------------|----------|
+| **RGB Bulbs** | Full color, tunable white, scenes, push updates |
+| **Tunable White** | Color temperature, brightness, scenes |
+| **Dimmable White** | Brightness only, basic scenes |
+| **Smart Plugs** | On/off, **power monitoring** |
+| **Ceiling Fans** | Light control + **fan control** |
+| **Wall Switches** | On/off control |
 
 ## Installation
 
-Add this to your package's `pubspec.yaml` file:
+Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  wizlight: ^1.0.0
+  wizlight: ^2.0.0
 ```
 
 Then run:
@@ -33,180 +44,330 @@ dart pub get
 
 ## Quick Start
 
-### Library Usage
+### Modern API (Recommended)
 
 ```dart
 import 'package:wizlight/wizlight.dart';
 
 void main() async {
-  // Create a bulb instance
   final bulb = Bulb();
   bulb.setDeviceIP('192.168.1.100');
 
-  // Turn the light on
-  await bulb.toggleLight(true);
+  // Turn on with PilotBuilder
+  final builder = PilotBuilder()
+    ..brightness = 200
+    ..colorTemp = 2700;
+  await bulb.turnOn(builder);
 
-  // Set brightness to 75%
-  await bulb.setBrightness(75);
+  // Get typed state
+  final state = await bulb.updateState();
+  print('Brightness: ${state?.brightness}');
+  print('Temp: ${state?.colorTemp}K');
 
-  // Set RGB color to purple
-  await bulb.setRGBColor(128, 0, 255);
-
-  // Set a scene (Ocean = 1)
-  await bulb.setScene(1);
-
-  // Get current status
-  final status = await bulb.getStatus();
-  print(status);
-
-  // Clean up
-  bulb.close();
+  // State-aware toggle
+  await bulb.lightSwitch();
 }
 ```
 
-### CLI Usage
+### Legacy API (Still Supported)
 
-The package includes a command-line tool for controlling WiZ bulbs:
+```dart
+import 'package:wizlight/wizlight.dart';
 
-```bash
-# Discover bulbs on the network
-dart run wizlight discover --bcast 192.168.1.255
+void main() async {
+  final bulb = Bulb();
+  bulb.setDeviceIP('192.168.1.100');
 
-# Turn a bulb on
-dart run wizlight on --ip 192.168.1.100
-
-# Turn a bulb off
-dart run wizlight off --ip 192.168.1.100
-
-# Set brightness to 50%
-dart run wizlight setbrightness --ip 192.168.1.100 --dim 50
-
-# Set RGB color
-dart run wizlight setrgbcolor --ip 192.168.1.100 --r 255 --g 128 --b 0
-
-# Set color temperature (warm white)
-dart run wizlight setcolortemp --ip 192.168.1.100 --temp 2700
-
-# Set a scene
-dart run wizlight setscene --ip 192.168.1.100 --scene 1
-
-# Get help
-dart run wizlight --help
-dart run wizlight setscene --help
+  await bulb.toggleLight(true);
+  await bulb.setBrightness(75);
+  await bulb.setRGBColor(128, 0, 255);
+  await bulb.setScene(1);
+}
 ```
 
-#### Interactive Mode
+## Core Features
 
-You can also run commands in interactive mode by providing only the command name:
+### 1. Device Capability Detection
 
-```bash
-dart run wizlight on
-# Will prompt: Enter the bulb IP address:
+```dart
+// Detect what your bulb can do
+final bulbType = await bulb.getBulbType();
+print('Type: ${bulbType?.bulbType}');
+print('Supports color: ${bulbType?.features.color}');
+print('Kelvin range: ${bulbType?.kelvinRange}');
+
+// Get supported scenes
+final scenes = await bulb.getSupportedScenes();
+print('Available: $scenes');
+```
+
+### 2. Push Updates (Real-time State Changes)
+
+```dart
+// Get instant notifications without polling!
+await bulb.startPush((state, ip) {
+  print('State changed!');
+  print('  On: ${state.state}');
+  print('  Brightness: ${state.brightness}');
+  print('  Source: ${state.source}'); // 'udp', 'pir', 'wfa1', etc.
+});
+
+// Changes from wall switch, app, or motion sensor
+// will trigger the callback automatically!
+```
+
+### 3. Extended Color Control
+
+```dart
+// RGB (3 channels)
+await bulb.setRGBColor(255, 0, 0);
+
+// RGBW (4 channels: RGB + warm white)
+await bulb.setRgbw(255, 100, 0, 150);
+
+// RGBWW (5 channels: RGB + cold white + warm white)
+await bulb.setRgbww(255, 0, 0, 100, 200);
+
+// Individual white LED control
+await bulb.setWarmWhite(200);
+await bulb.setColdWhite(150);
+```
+
+### 4. Smart Plug Power Monitoring
+
+```dart
+// Get current power consumption
+final watts = await bulb.getPower();
+if (watts != null) {
+  print('Power: ${watts.toStringAsFixed(2)}W');
+}
+```
+
+### 5. Ceiling Fan Control
+
+```dart
+// Turn fan on with settings
+await bulb.fanTurnOn(mode: 1, speed: 3);
+
+// Full control
+await bulb.fanSetState(
+  state: 1,      // on
+  mode: 2,       // breeze mode
+  speed: 6,      // max speed
+  reverse: 0,    // summer mode
+);
+
+// Toggle fan
+await bulb.fanSwitch();
 ```
 
 ## API Reference
 
-### Bulb Class
-
-The main class for controlling WiZ bulbs.
-
-#### Device Management
+### Modern Control Methods
 
 ```dart
-void setDeviceIP(String ip)
-String getDeviceIp()
-void close()
+// Core control
+Future<void> turnOn([PilotBuilder? pilot])
+Future<void> turnOff()
+Future<void> lightSwitch()  // State-aware toggle
+Future<void> setState(PilotBuilder pilot)
+
+// State management
+Future<PilotParser?> updateState()
+PilotParser? get state  // Cached state
+
+// Device info
+Future<String?> getMac()
+Future<Map<String, dynamic>?> getModelConfig()
+Future<void> reset()
+Future<BulbType?> getBulbType()
+Future<List<double>?> getWhiteRange()
+Future<List<double>?> getExtendedWhiteRange()
+Future<List<String>> getSupportedScenes()
+
+// Extended color
+Future<void> setRgbw(int r, int g, int b, int w)
+Future<void> setRgbww(int r, int g, int b, int c, int w)
+Future<void> setWarmWhite(int value)
+Future<void> setColdWhite(int value)
+Future<void> setRatio(int ratio)  // Up/down light ratio
+
+// Power monitoring
+Future<double?> getPower()
+
+// Fan control
+Future<void> fanTurnOn({int? mode, int? speed})
+Future<void> fanTurnOff()
+Future<void> fanSetState({int? state, int? mode, int? speed, int? reverse})
+Future<void> fanSwitch()
+Future<int?> getFanSpeedRange()
+
+// Push updates
+Future<bool> startPush(PushCallback callback)
+Future<void> stopPush()
+void setDiscoveryCallback(DiscoveryCallback callback)
 ```
 
-#### Discovery
+### PilotBuilder
+
+Fluent API for building bulb commands:
 
 ```dart
-Future<String> discover(String broadcastIp)
+final builder = PilotBuilder()
+  ..brightness = 200           // 0-255
+  ..colorTemp = 2700           // 1000-10000K
+  ..setRgb(255, 0, 0)          // RGB color
+  ..setRgbw(255, 0, 0, 150)    // RGBW color
+  ..setRgbww(255, 0, 0, 100, 200)  // RGBWW color
+  ..warmWhite = 200            // Warm white LED
+  ..coldWhite = 150            // Cold white LED
+  ..scene = 1                  // Scene ID
+  ..sceneName = 'Ocean'        // Scene name
+  ..speed = 100                // Animation speed (10-200)
+  ..ratio = 50                 // Up/down ratio (0-100)
+  ..state = true;              // On/off state
+
+// Use with turn on
+await bulb.turnOn(builder);
+
+// Or get raw message
+final msg = builder.setPilotMessage(state: true);
 ```
 
-Discovers WiZ bulbs on the network. Returns JSON with device info and IP address.
+### PilotParser
 
-**Example:**
-```dart
-final result = await bulb.discover('192.168.1.255');
-```
-
-#### Status & Information
-
-```dart
-Future<String> getStatus()
-Future<String> getDeviceInfo()
-Future<String> getWifiConfig()
-Future<String> getSystemConfig()
-Future<String> getUserConfig()
-```
-
-Query bulb status and configuration information.
-
-#### Basic Control
-
-```dart
-Future<String> toggleLight(bool state)
-Future<String> reboot()
-```
-
-Turn lights on/off or reboot the device.
-
-#### Brightness & Color
+Typed access to bulb state:
 
 ```dart
-Future<String> setBrightness(int brightness)  // 0-100
-Future<String> setRGBColor(int r, int g, int b)  // 0-255 each
-Future<String> setColorTemp(int temp)  // 1000-8000 Kelvin
+final state = await bulb.updateState();
+
+// Basic state
+state?.state            // bool - on/off
+state?.brightness       // int - 0-255
+state?.colorTemp        // int - kelvin
+state?.scene            // String - scene name
+state?.sceneId          // int - scene ID
+state?.source           // String - change source
+state?.mac              // String - MAC address
+
+// Colors
+state?.rgb              // (int, int, int) - RGB tuple
+state?.rgbw             // (int, int, int, int) - RGBW tuple
+state?.rgbww            // (int, int, int, int, int) - RGBWW tuple
+state?.warmWhite        // int - warm white LED
+state?.coldWhite        // int - cold white LED
+
+// Extended
+state?.speed            // int - animation speed
+state?.ratio            // int - up/down ratio
+state?.power            // double - watts
+state?.rssi             // int - WiFi signal
+state?.whiteRange       // List<double> - kelvin range
+state?.extendedWhiteRange  // List<double> - extended range
+
+// Fan (ceiling fans)
+state?.fanState         // int - 0=off, 1=on
+state?.fanMode          // int - 1=normal, 2=breeze
+state?.fanSpeed         // int - speed level
+state?.fanReverse       // int - 0=normal, 1=reverse
+state?.fanSpeedRange    // int - max speed
 ```
 
-Control brightness and color.
+### BulbType
 
-**Examples:**
+Device capability detection:
+
 ```dart
-await bulb.setBrightness(75);  // 75% brightness
-await bulb.setRGBColor(255, 0, 0);  // Red
-await bulb.setColorTemp(3000);  // Warm white
+final bulbType = await bulb.getBulbType();
+
+// Classification
+bulbType?.bulbType      // BulbClass enum (rgb, tw, dw, socket, fandim)
+bulbType?.name          // String - module name
+bulbType?.fwVersion     // String - firmware version
+
+// Feature flags
+bulbType?.features.color        // bool - supports RGB
+bulbType?.features.colorTemp    // bool - supports kelvin
+bulbType?.features.brightness   // bool - supports dimming
+bulbType?.features.effect       // bool - supports scenes
+bulbType?.features.dualHead     // bool - dual direction
+bulbType?.features.fan          // bool - has fan
+bulbType?.features.fanBreezeMode  // bool - breeze mode
+bulbType?.features.fanReverse    // bool - reverse rotation
+
+// Ranges
+bulbType?.kelvinRange?.min      // int - min kelvin
+bulbType?.kelvinRange?.max      // int - max kelvin
+bulbType?.whiteChannels         // int - number of white LEDs
+bulbType?.whiteToColorRatio     // int - white/color ratio
+bulbType?.fanSpeedRange         // int - max fan speed
 ```
 
-#### Scenes & Animation
+## Available Scenes
 
-```dart
-Future<String> setScene(int scene)  // 1-32
-Future<String> setSpeed(int speed)  // 0-100
-```
-
-Set preset scenes and animation speed.
-
-### Available Scenes
-
-The package supports 32 preset scenes:
+46 scenes supported (bulb-dependent):
 
 | ID | Scene | ID | Scene | ID | Scene |
 |----|-------|----|-------|----|-------|
-| 1 | Ocean | 12 | Daylight | 23 | Deepdive |
-| 2 | Romance | 13 | Cool white | 24 | Jungle |
-| 3 | Sunset | 14 | Night light | 25 | Mojito |
-| 4 | Party | 15 | Focus | 26 | Club |
-| 5 | Fireplace | 16 | Relax | 27 | Christmas |
-| 6 | Cozy | 17 | True colors | 28 | Halloween |
-| 7 | Forest | 18 | TV time | 29 | Candlelight |
-| 8 | Pastel Colors | 19 | Plantgrowth | 30 | Golden white |
-| 9 | Wake up | 20 | Spring | 31 | Pulse |
-| 10 | Bedtime | 21 | Summer | 32 | Steampunk |
-| 11 | Warm White | 22 | Fall | | |
+| 1 | Ocean | 16 | Relax | 31 | Pulse |
+| 2 | Romance | 17 | True colors | 32 | Steampunk |
+| 3 | Sunset | 18 | TV time | 33 | Diwali |
+| 4 | Party | 19 | Plantgrowth | 34 | White |
+| 5 | Fireplace | 20 | Spring | 35 | Alarm |
+| 6 | Cozy | 21 | Summer | 36 | Snowy sky |
+| 7 | Forest | 22 | Fall | 1000 | Rhythm |
+| 8 | Pastel colors | 23 | Deep dive | | |
+| 9 | Wake-up | 24 | Jungle | | |
+| 10 | Bedtime | 25 | Mojito | | |
+| 11 | Warm white | 26 | Club | | |
+| 12 | Daylight | 27 | Christmas | | |
+| 13 | Cool white | 28 | Halloween | | |
+| 14 | Night light | 29 | Candlelight | | |
+| 15 | Focus | 30 | Golden white | | |
 
-### WizControl Class
+## Examples
 
-Singleton class for command handling and CLI operations.
+See the `example/` directory for comprehensive examples:
 
-```dart
-WizControl getInstance()
-bool isCmdSupported(String cmd)
-Future<bool> validateArgsUsage(List<String> args)
-Future<String> performWizRequest(String cmd)
-static void printUsage()
-static String getSceneList()
+- **`modern_api.dart`** - Demonstrates all new features
+- **`push_updates.dart`** - Real-time state change notifications
+- **`advanced_colors.dart`** - RGB, RGBW, RGBWW color control
+- **`bulb_capabilities.dart`** - Capability detection and adaptive control
+- **`main.dart`** - Legacy API examples
+
+### Run Examples
+
+```bash
+dart run example/modern_api.dart
+dart run example/push_updates.dart
+dart run example/advanced_colors.dart
+dart run example/bulb_capabilities.dart
+```
+
+## CLI Usage
+
+Command-line interface for quick bulb control:
+
+```bash
+# Discover bulbs
+dart run wizlight discover --bcast 192.168.1.255
+
+# Control bulb
+dart run wizlight on --ip 192.168.1.100
+dart run wizlight off --ip 192.168.1.100
+dart run wizlight setbrightness --ip 192.168.1.100 --dim 50
+
+# RGB color
+dart run wizlight setrgbcolor --ip 192.168.1.100 --r 255 --g 0 --b 0
+
+# Color temperature
+dart run wizlight setcolortemp --ip 192.168.1.100 --temp 2700
+
+# Scenes
+dart run wizlight setscene --ip 192.168.1.100 --scene 1
+
+# Help
+dart run wizlight --help
 ```
 
 ## Protocol Details
@@ -214,212 +375,168 @@ static String getSceneList()
 ### Communication
 
 - **Protocol**: UDP
-- **Port**: 38899
+- **Port**: 38899 (control), 38900 (push updates)
 - **Format**: JSON
-- **Timeout**: 2 seconds
+- **Timeout**: 13 seconds with progressive backoff
+- **Retries**: 6 attempts (0s, 0.75s, 2.25s, 5.25s, 8.25s, 11.25s)
 
-### Request Format
+### Progressive Backoff
 
-```json
-{
-  "id": 1,
-  "method": "setPilot",
-  "params": {
-    "state": true,
-    "dimming": 75
-  }
-}
-```
+Unlike the original implementation, this port includes robust retry logic:
+- Sends multiple datagrams with increasing delays
+- Much better reliability for distant bulbs
+- Configurable timeout and retry parameters
 
-### Response Format
+### Request Serialization
 
-```json
-{
-  "bulb_response": {
-    "mac": "123456789ABC",
-    "rssi": -50,
-    "state": true,
-    "sceneId": 0,
-    "temp": 3000,
-    "dimming": 75
-  }
-}
-```
-
-## Examples
-
-### Discover Bulbs
-
-```dart
-import 'package:wizlight/wizlight.dart';
-
-void main() async {
-  final bulb = Bulb();
-
-  // Use your network's broadcast address
-  final result = await bulb.discover('192.168.1.255');
-
-  if (result.isNotEmpty) {
-    print('Bulb discovered:');
-    print(result);
-  }
-
-  bulb.close();
-}
-```
-
-### Create a Light Show
-
-```dart
-import 'package:wizlight/wizlight.dart';
-
-void main() async {
-  final bulb = Bulb();
-  bulb.setDeviceIP('192.168.1.100');
-
-  // Turn on
-  await bulb.toggleLight(true);
-
-  // Cycle through colors
-  final colors = [
-    [255, 0, 0],    // Red
-    [255, 165, 0],  // Orange
-    [255, 255, 0],  // Yellow
-    [0, 255, 0],    // Green
-    [0, 0, 255],    // Blue
-    [128, 0, 255],  // Purple
-  ];
-
-  for (final color in colors) {
-    await bulb.setRGBColor(color[0], color[1], color[2]);
-    await Future.delayed(Duration(seconds: 2));
-  }
-
-  bulb.close();
-}
-```
-
-### Input Validation
-
-All methods validate input ranges and return `"Invalid_Request"` for out-of-range values:
-
-```dart
-// These will return "Invalid_Request"
-await bulb.setBrightness(150);  // Valid: 0-100
-await bulb.setRGBColor(300, 0, 0);  // Valid: 0-255
-await bulb.setColorTemp(10000);  // Valid: 1000-8000
-await bulb.setScene(99);  // Valid: 1-32
-```
+All requests are serialized to prevent race conditions and response mismatches.
 
 ## Testing
-
-Run the test suite:
 
 ```bash
 dart test
 ```
 
-The package includes comprehensive unit tests for:
+35 tests covering:
 - Input validation
 - JSON request format
 - Response parsing
-- Command handling
 - Protocol constants
+- All control methods
 
-## Development
+## Migration Guide
 
-### Project Structure
+### From v1.x to v2.x
 
-```
-wizlight/
-├── bin/
-│   └── wizlight.dart       # CLI entry point
-├── lib/
-│   ├── wizlight.dart       # Main library export
-│   └── src/
-│       ├── bulb.dart       # Bulb control class
-│       ├── udp_socket.dart # UDP communication
-│       └── wiz_control.dart # Command handling
-├── test/
-│   ├── bulb_test.dart      # Bulb class tests
-│   └── wiz_control_test.dart # WizControl tests
-├── example/
-│   └── main.dart           # Usage examples
-└── pubspec.yaml
+**Old API** (still works):
+```dart
+await bulb.toggleLight(true);
+final status = await bulb.getStatus();  // Returns JSON string
 ```
 
-### Code Style
-
-This project follows the [Dart style guide](https://dart.dev/guides/language/effective-dart/style):
-
-- Two spaces for indentation
-- Prefer `final` and `const`
-- Use Dartdoc comments (`///`) for public APIs
-- Null-safety enforced
-
-### Format and Analyze
-
-```bash
-dart format .
-dart analyze
+**New API** (recommended):
+```dart
+await bulb.turnOn();
+final state = await bulb.updateState();  // Returns PilotParser
+print(state?.brightness);
 ```
+
+**Benefits of new API:**
+- Typed state access
+- Better error handling with exceptions
+- Push updates support
+- Feature detection
+- Extended color modes
+
+## Troubleshooting
+
+### Bulb Not Responding
+
+1. Check IP address is correct
+2. Ensure bulb is on same network
+3. Check firewall (UDP ports 38899, 38900)
+4. Try discovery mode to find bulb IP
+
+### Push Updates Not Working
+
+1. Port 38900 must be available
+2. Check firewall allows UDP incoming
+3. Ensure no other apps using port 38900
+4. Falls back to polling if push fails
+
+### Timeout Errors
+
+- Default timeout is 13 seconds with 6 retries
+- Check network latency
+- Ensure bulb is powered and connected
+
+### Extended Features Not Available
+
+- Check bulb capabilities with `getBulbType()`
+- Not all features work on all bulb types
+- Older firmware may not support newer methods
 
 ## Platform Support
 
 - **Dart SDK**: >=3.0.0 <4.0.0
-- **Platforms**: All platforms supporting Dart (Linux, macOS, Windows)
+- **Platforms**: All platforms (Linux, macOS, Windows, mobile)
 - **Dependencies**:
-  - `args` - Command-line argument parsing
+  - `args` - CLI parsing
   - `logging` - Structured logging
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions welcome! Please submit Pull Requests.
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create feature branch
+3. Add tests for new features
+4. Ensure all tests pass
+5. Submit Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file.
 
-Original C++ implementation Copyright (c) 2022 Sri Balaji S.
-Dart port Copyright (c) 2025.
+Original C++ implementation © 2022 Sri Balaji S.
+Python pywizlight © Stephan Traub
+Dart port © 2025
 
 ## Credits
 
-- Original C++ implementation: [wizlightcpp](https://github.com/srisham/wizlightcpp) by Sri Balaji S.
-- WiZ protocol documentation and community contributions
-
-## Troubleshooting
-
-### Bulb not responding
-
-1. Ensure the bulb is on the same network
-2. Check firewall settings (UDP port 38899)
-3. Verify the IP address is correct
-4. Try discovery mode to find the bulb's IP
-
-### Discovery not working
-
-1. Use the correct broadcast address for your network
-2. Check network configuration (subnet mask)
-3. Ensure broadcast is enabled on your network interface
-
-### Timeout errors
-
-- Default timeout is 2 seconds
-- Check network latency
-- Ensure bulb is powered on and connected to WiFi
+- **pywizlight**: [sbidy/pywizlight](https://github.com/sbidy/pywizlight) - Primary reference
+- **wizlightcpp**: [srisham/wizlightcpp](https://github.com/srisham/wizlightcpp) - Original port base
+- WiZ protocol documentation and community
 
 ## Related Projects
 
-- [wizlightcpp](https://github.com/srisham/wizlightcpp) - Original C++ implementation
-- [pywizlight](https://github.com/sbidy/pywizlight) - Python implementation
+- [pywizlight](https://github.com/sbidy/pywizlight) - Python (reference implementation)
+- [wizlightcpp](https://github.com/srisham/wizlightcpp) - C++
+- [Home Assistant WiZ Integration](https://www.home-assistant.io/integrations/wiz/) - Uses pywizlight
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for version history.
+### v2.0.0 - Complete pywizlight Port
+
+**Major Features:**
+- ✨ Modern API with `PilotBuilder` and `PilotParser`
+- 🔔 Push updates for real-time state notifications
+- 🎨 Extended color modes (RGBW, RGBWW, individual white LEDs)
+- 🔍 Automatic bulb type and capability detection
+- ⚡ Progressive backoff retry (6 attempts over 13s)
+- 📊 Power monitoring for smart plugs
+- 🌀 Full ceiling fan controller support
+- 🏗️ Request serialization with async locks
+- 🎯 Typed exceptions for proper error handling
+- 📚 Comprehensive documentation and examples
+
+**New Classes:**
+- `PilotBuilder` - Command builder with fluent API
+- `PilotParser` - Typed state parsing
+- `BulbType` - Capability detection
+- `PushManager` - Push update manager
+- Exception hierarchy
+
+**New Methods:**
+- 40+ new methods in `Bulb` class
+- Push updates: `startPush()`, `stopPush()`
+- Modern control: `turnOn()`, `turnOff()`, `lightSwitch()`
+- State: `updateState()`, `state` getter
+- Extended colors: `setRgbw()`, `setRgbww()`, `setWarmWhite()`, `setColdWhite()`
+- Capabilities: `getBulbType()`, `getSupportedScenes()`
+- Fan control: `fanTurnOn()`, `fanTurnOff()`, `fanSetState()`, `fanSwitch()`
+- Power: `getPower()`
+
+**Backward Compatibility:**
+- All v1.x methods still supported
+- No breaking changes to existing code
+
+See [pywizlight_port.md](pywizlight_port.md) for complete implementation plan.
+
+### v1.0.0 - Initial Release
+
+- Basic bulb control
+- Discovery
+- RGB colors and color temperature
+- Scenes and brightness
+- CLI tool
