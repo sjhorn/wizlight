@@ -10,6 +10,7 @@ A dart package for controlling WiZ smart devices over UDP. This is a port of the
 This is a **rewrite** with features from pywizlight:
 - ✨ **API** with `PilotBuilder` and `PilotParser`
 - 🔔 **Push Updates** - Real-time state change notifications
+- 🎛️ **Smart Dial Support** - WiZ Smart Dial Switch event handling (NEW in 2.1.0!)
 - 🎨 **Extended Colors** - RGBW, RGBWW, individual white LED control
 - 🔍 **Capability Detection** - Automatic bulb type and feature detection
 - ⚡ **Robust Communication** - Progressive backoff retry (6 attempts over 13s)
@@ -27,6 +28,7 @@ This is a **rewrite** with features from pywizlight:
 | **Smart Plugs** | On/off, **power monitoring** |
 | **Ceiling Fans** | Light control + **fan control** |
 | **Wall Switches** | On/off control |
+| **Smart Dial** | Rotation, button events, scene buttons (NEW!) |
 
 ## Installation
 
@@ -161,6 +163,57 @@ await bulb.fanSetState(
 // Toggle fan
 await bulb.fanSwitch();
 ```
+
+### WiZ Smart Dial Switch (NEW in 2.1.0!)
+
+Listen for events from WiZ Smart Dial Switch (model 9290037923):
+
+```dart
+import 'package:wizlight/wizlight.dart';
+
+// Create a dial instance
+final dial = WizDial(mac: '9877d583fec5', name: 'Living Room');
+
+// Start listening for events
+await dial.startListening((event) {
+  switch (event.type) {
+    case DialEventType.rotationClockwise:
+      print('Turned right');
+      break;
+    case DialEventType.rotationCounterClockwise:
+      print('Turned left');
+      break;
+    case DialEventType.dialShortPress:
+      print('Button pressed');
+      break;
+    case DialEventType.dialLongPress:
+      print('Button held');
+      break;
+    case DialEventType.scene1ShortPress:
+      print('Scene 1 pressed');
+      break;
+    case DialEventType.scene2ShortPress:
+      print('Scene 2 pressed');
+      break;
+    // ... and more
+  }
+});
+
+// Example: Control bulb brightness with dial
+final bulb = Bulb();
+bulb.setDeviceIP('192.168.1.100');
+
+dial.startListening((event) async {
+  if (event.type == DialEventType.rotationClockwise) {
+    // Increase brightness
+    final state = await bulb.updateState();
+    final brightness = ((state?.brightness ?? 128) * 100 / 255).round();
+    await bulb.setBrightness((brightness + 5).clamp(0, 100));
+  }
+});
+```
+
+See `example/dial_controlled_bulb.dart` for a complete example.
 
 ## API Reference
 

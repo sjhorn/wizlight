@@ -5,6 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-11-08
+
+### Added
+
+- **WiZ Smart Dial Switch Support** (model 9290037923)
+  - New `WizDial` class for representing Smart Dial devices
+  - `DialManager` singleton for receiving UDP broadcast events from dials
+  - `DialEvent` class with complete event type mapping:
+    - Rotation events (clockwise/counter-clockwise, stepped/discrete clicks)
+    - Dial button events (short press, long press)
+    - Scene button 1 events (short press, long press)
+    - Scene button 2 events (short press, long press)
+  - `DialEventType` enum with 8 event types + unknown
+  - Event parsing from 13-byte binary frames (base64-encoded)
+  - Simple callback-based API similar to `PushManager`
+  - **Automatic event debouncing** for button presses (250ms window)
+    - Prevents duplicate events from hardware bouncing
+    - Rotation events are not debounced for fast responsiveness
+    - Per-MAC and per-event-type filtering
+
+- **Testing Support for Smart Dial**
+  - `FakeDial` test helper in `test/helpers/fake_dial.dart`
+  - Comprehensive unit tests for event parsing (`test/dial_event_test.dart`)
+  - Integration tests for manager and event handling (`test/integration/dial_integration_test.dart`)
+  - Integration tests for debouncing behavior (`test/integration/dial_debounce_test.dart`)
+  - Test hooks: `DialManager.testListenPort`, `DialManager.resetForTesting()`
+
+- **Examples**
+  - `example/smart_dial_monitor.dart` - Monitor and display all dial events
+  - `example/dial_controlled_bulb.dart` - Control bulb brightness/power/scenes with dial
+
+- **Documentation**
+  - Complete protocol analysis and implementation guide in `SMART_DIAL.md`
+  - Updated README.md with Smart Dial usage examples
+
+### Fixed
+
+- Corrected rotation direction mapping based on real hardware testing:
+  - 0x08 = counter-clockwise (was incorrectly mapped as clockwise)
+  - 0x09 = clockwise (was incorrectly mapped as counter-clockwise)
+  - Initial mapping was reversed during protocol reverse engineering
+  - All tests and examples updated to reflect correct behavior
+
+### Technical Notes
+
+- Smart Dial uses UDP port 38899 (same as bulb respond port) with method `syncAccEvt`
+- Events are broadcast without requiring registration (unlike bulbs)
+- Rotation is stepped (discrete clicks), not continuous degrees
+- Each click sends exactly one event (0x08 = CCW, 0x09 = CW)
+- Protocol fully reverse-engineered from real hardware captures
+
 ## [2.0.0] - 2025-11-07
 
 ### Added
