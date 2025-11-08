@@ -30,7 +30,7 @@ void main() async {
   print('Use Python CLI or WiZ app to change state');
   print('========================================\n');
 
-  await Future.delayed(Duration(seconds: 45));
+  await Future.delayed(const Duration(seconds: 45));
 
   print('\nStopping...');
   await bulb.stopPush();

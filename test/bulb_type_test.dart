@@ -373,15 +373,15 @@ void main() {
 
   group('KelvinRange', () {
     test('kelvin range creation', () {
-      final range = KelvinRange(min: 2700, max: 6500);
+      final range = const KelvinRange(min: 2700, max: 6500);
       expect(range.min, equals(2700));
       expect(range.max, equals(6500));
     });
 
     test('kelvin range equality', () {
-      final range1 = KelvinRange(min: 2700, max: 6500);
-      final range2 = KelvinRange(min: 2700, max: 6500);
-      final range3 = KelvinRange(min: 2200, max: 6500);
+      final range1 = const KelvinRange(min: 2700, max: 6500);
+      final range2 = const KelvinRange(min: 2700, max: 6500);
+      final range3 = const KelvinRange(min: 2200, max: 6500);
 
       // Compare properties instead of object equality
       expect(range1.min, equals(range2.min));

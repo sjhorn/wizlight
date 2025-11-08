@@ -2,6 +2,7 @@
 
 A dart package for controlling WiZ smart devices over UDP. This is a port of the popular [pywizlight](https://github.com/sbidy/pywizlight) Python library, originally based on [wizlightcpp](https://github.com/srisham/wizlightcpp).
 
+[![pub package](https://img.shields.io/pub/v/wizlight.svg)](https://pub.dev/packages/wizlight)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🌟 New Features

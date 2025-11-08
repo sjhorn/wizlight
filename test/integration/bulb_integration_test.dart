@@ -5,10 +5,22 @@
 import 'package:test/test.dart';
 import 'package:wizlight/src/bulb.dart';
 import 'package:wizlight/src/pilot_builder.dart';
-import 'package:wizlight/src/pilot_parser.dart';
+import 'package:wizlight/src/udp_socket.dart';
 import '../helpers/fake_bulb.dart';
 
 void main() {
+  // Set up faster timeouts for testing
+  setUpAll(() {
+    testTimeout = 3; // 3 seconds instead of 13
+    testMaxSendDatagrams = 3; // 3 retries instead of 6
+  });
+
+  // Clean up after all tests
+  tearDownAll(() {
+    testTimeout = null;
+    testMaxSendDatagrams = null;
+  });
+
   group('Bulb Integration Tests - Basic Operations', () {
     late FakeBulb fakeBulb;
     late Bulb bulb;
@@ -27,7 +39,7 @@ void main() {
 
     test('turn on bulb', () async {
       await bulb.turnOn();
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['state'], equals(true));
@@ -36,11 +48,11 @@ void main() {
     test('turn off bulb', () async {
       // First turn on
       await bulb.turnOn();
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       // Then turn off
       await bulb.turnOff();
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['state'], equals(false));
@@ -48,7 +60,7 @@ void main() {
 
     test('set brightness', () async {
       await bulb.setBrightness(75);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['dimming'], equals(75));
@@ -56,7 +68,7 @@ void main() {
 
     test('set RGB color', () async {
       await bulb.setRGBColor(255, 128, 64);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['r'], equals(255));
@@ -66,7 +78,7 @@ void main() {
 
     test('set color temperature', () async {
       await bulb.setColorTemp(4000);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['temp'], equals(4000));
@@ -74,7 +86,7 @@ void main() {
 
     test('set scene', () async {
       await bulb.setScene(1); // Ocean
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['sceneId'], equals(1));
@@ -84,7 +96,7 @@ void main() {
       // Set some state first
       await bulb.setBrightness(50);
       await bulb.setColorTemp(3000);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       // Now read it back
       final parser = await bulb.updateState();
@@ -101,14 +113,14 @@ void main() {
 
       // Toggle on
       await bulb.lightSwitch();
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state2 = await bulb.updateState();
       expect(state2?.state, equals(true));
 
       // Toggle off
       await bulb.lightSwitch();
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state3 = await bulb.updateState();
       expect(state3?.state, equals(false));
@@ -133,7 +145,7 @@ void main() {
 
     test('set RGBW color', () async {
       await bulb.setRgbw(255, 128, 64, 32);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['r'], equals(255));
@@ -144,7 +156,7 @@ void main() {
 
     test('set RGBWW color', () async {
       await bulb.setRgbww(255, 128, 64, 32, 16);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['r'], equals(255));
@@ -156,7 +168,7 @@ void main() {
 
     test('set warm white', () async {
       await bulb.setWarmWhite(200);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['w'], equals(200));
@@ -164,7 +176,7 @@ void main() {
 
     test('set cold white', () async {
       await bulb.setColdWhite(150);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['c'], equals(150));
@@ -193,7 +205,7 @@ void main() {
         ..colorTemp = 2700;
 
       await bulb.turnOn(builder);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['state'], equals(true));
@@ -207,7 +219,7 @@ void main() {
         ..speed = 100;
 
       await bulb.turnOn(builder);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['sceneId'], equals(1));
@@ -220,7 +232,7 @@ void main() {
         ..setRgb(128, 0, 255);
 
       await bulb.setState(builder);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final state = fakeBulb.currentState;
       expect(state['dimming'], equals(59)); // 150/255 * 100 ≈ 59%
@@ -300,20 +312,14 @@ void main() {
   });
 
   group('Bulb Integration Tests - Power Monitoring', () {
-    late FakeBulb fakeBulb;
     late Bulb bulb;
 
     setUp(() async {
       final (server, port) = await startupBulb(config: BulbConfigs.socket);
-      fakeBulb = server;
       bulb = Bulb();
       bulb.setDeviceIP('127.0.0.1');
       bulb.setPort(port);
     });
-
-    tearDown() {
-      fakeBulb.stop();
-    };
 
     test('getPower returns power consumption', () async {
       final power = await bulb.getPower();
@@ -404,19 +410,15 @@ void main() {
       bulb.setPort(port);
     });
 
-    tearDown() {
-      fakeBulb.stop();
-    };
-
     test('toggleLight turns on/off', () async {
       await bulb.toggleLight(true);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       var state = fakeBulb.currentState;
       expect(state['state'], equals(true));
 
       await bulb.toggleLight(false);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       state = fakeBulb.currentState;
       expect(state['state'], equals(false));

@@ -6,9 +6,22 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:wizlight/src/bulb.dart';
 import 'package:wizlight/src/pilot_parser.dart';
+import 'package:wizlight/src/push_manager.dart';
 import '../helpers/fake_bulb.dart';
 
 void main() {
+  // Set up PushManager for testing before all tests
+  setUpAll(() {
+    PushManager.resetForTesting();
+    PushManager.testListenPort = 0; // Use any available port
+    PushManager.testSourceIp = '127.0.0.1';
+  });
+
+  // Clean up after all tests
+  tearDownAll(() {
+    PushManager.resetForTesting();
+  });
+
   group('Push Updates Integration Tests', () {
     test('startPush receives state updates', () async {
       final (fakeBulb, port) = await startupBulb();
@@ -30,15 +43,21 @@ void main() {
 
       expect(success, isTrue, reason: 'Push updates should start successfully');
 
+      // Configure FakeBulb with the actual push listen port
+      final pushPort = PushManager().actualListenPort;
+      if (pushPort != null) {
+        fakeBulb.setPushListenPort(pushPort);
+      }
+
       // Give push system time to register
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Now make a change to the bulb
       await bulb.turnOn();
 
       // Wait for push notification (with timeout)
       await completer.future.timeout(
-        Duration(seconds: 3),
+        const Duration(seconds: 3),
         onTimeout: () {
           fail('Did not receive push update within timeout');
         },
@@ -70,18 +89,24 @@ void main() {
         }
       });
 
-      await Future.delayed(Duration(milliseconds: 500));
+      // Configure FakeBulb with the actual push listen port
+      final pushPort = PushManager().actualListenPort;
+      if (pushPort != null) {
+        fakeBulb.setPushListenPort(pushPort);
+      }
+
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Make multiple changes
       await bulb.setBrightness(75);
-      await Future.delayed(Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 200));
 
       await bulb.setColorTemp(4000);
-      await Future.delayed(Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 200));
 
       // Wait for updates
       await completer.future.timeout(
-        Duration(seconds: 5),
+        const Duration(seconds: 5),
         onTimeout: () {
           // Don't fail, just log
           print('Received ${updates.length} updates before timeout');
@@ -108,7 +133,6 @@ void main() {
       device2.setPort(port2);
 
       final updates1 = <PilotParser>[];
-      final updates2 = <PilotParser>[];
 
       // Note: Only one bulb can actually use push at a time due to port 38900 limitation
       // This test verifies the API works correctly for the first bulb
@@ -117,11 +141,18 @@ void main() {
         updates1.add(state);
       });
 
-      await Future.delayed(Duration(milliseconds: 500));
+      // Configure FakeBulbs with the actual push listen port
+      final pushPort = PushManager().actualListenPort;
+      if (pushPort != null) {
+        bulb1.setPushListenPort(pushPort);
+        bulb2.setPushListenPort(pushPort);
+      }
+
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Make changes to device1
       await device1.turnOn();
-      await Future.delayed(Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 300));
 
       // Clean up
       await device1.stopPush();
@@ -145,21 +176,27 @@ void main() {
         updates.add(state);
       });
 
-      await Future.delayed(Duration(milliseconds: 500));
+      // Configure FakeBulb with the actual push listen port
+      final pushPort = PushManager().actualListenPort;
+      if (pushPort != null) {
+        fakeBulb.setPushListenPort(pushPort);
+      }
+
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Make a change
       await bulb.turnOn();
-      await Future.delayed(Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 300));
 
       final updatesBeforeStop = updates.length;
 
       // Stop push updates
       await bulb.stopPush();
-      await Future.delayed(Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 200));
 
       // Make more changes (should not trigger updates)
       await bulb.setBrightness(50);
-      await Future.delayed(Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 300));
 
       // Verify no new updates after stop
       expect(updates.length, equals(updatesBeforeStop));
@@ -184,13 +221,19 @@ void main() {
         }
       });
 
-      await Future.delayed(Duration(milliseconds: 500));
+      // Configure FakeBulb with the actual push listen port
+      final pushPort = PushManager().actualListenPort;
+      if (pushPort != null) {
+        fakeBulb.setPushListenPort(pushPort);
+      }
+
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Make a change
       await bulb.turnOn();
 
       await completer.future.timeout(
-        Duration(seconds: 3),
+        const Duration(seconds: 3),
         onTimeout: () {
           // Timeout is OK for this test
         },

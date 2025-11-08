@@ -52,7 +52,7 @@ class PilotParser {
   /// Available on smart plugs with power monitoring.
   /// Returns null if power monitoring is not supported or data not available.
   double? get power {
-    final milliWatts = _extractInt('pc');
+    final milliWatts = _extractInt('wh');
     return milliWatts != null ? milliWatts / 1000.0 : null;
   }
 
@@ -226,7 +226,7 @@ class PilotParser {
 
   String? _extractString(String key) {
     final value = pilotResult[key];
-    return value != null ? value.toString() : null;
+    return value?.toString();
   }
 
   int? _extractInt(String key) {

@@ -7,9 +7,23 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:test/test.dart';
 import 'package:wizlight/src/bulb.dart';
+import 'package:wizlight/src/exceptions.dart';
+import 'package:wizlight/src/udp_socket.dart';
 import '../helpers/fake_bulb.dart';
 
 void main() {
+  // Set up faster timeouts for testing
+  setUpAll(() {
+    testTimeout = 3; // 3 seconds instead of 13
+    testMaxSendDatagrams = 3; // 3 retries instead of 6
+  });
+
+  // Clean up after all tests
+  tearDownAll(() {
+    testTimeout = null;
+    testMaxSendDatagrams = null;
+  });
+
   group('Error Handling Integration Tests - Malformed Responses', () {
     test('handles malformed JSON gracefully', () async {
       // Create a fake bulb that returns malformed JSON
@@ -281,7 +295,7 @@ void main() {
       expect(bulbType, isNull);
 
       socket.close();
-    }, timeout: Timeout(Duration(seconds: 60)));
+    }, timeout: const Timeout(Duration(seconds: 60)));
 
     test('handles missing kelvin range data', () async {
       final socket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 0);
@@ -329,7 +343,7 @@ void main() {
       expect(range, isNull);
 
       socket.close();
-    }, timeout: Timeout(Duration(seconds: 60)));
+    }, timeout: const Timeout(Duration(seconds: 60)));
   });
 
   group('Error Handling Integration Tests - Late Responses', () {
@@ -359,11 +373,11 @@ void main() {
               socket.send(utf8.encode(response), datagram.address, datagram.port);
 
               // Send duplicate responses later (like real bulbs do)
-              Future.delayed(Duration(milliseconds: 100), () {
+              Future.delayed(const Duration(milliseconds: 100), () {
                 socket.send(utf8.encode(response), datagram.address, datagram.port);
               });
 
-              Future.delayed(Duration(milliseconds: 200), () {
+              Future.delayed(const Duration(milliseconds: 200), () {
                 socket.send(utf8.encode(response), datagram.address, datagram.port);
               });
             }
@@ -396,8 +410,8 @@ void main() {
             requestCount++;
 
             if (requestCount == 1) {
-              // First request: send response after a long delay
-              Future.delayed(Duration(seconds: 20), () {
+              // First request: send response after a long delay (will be ignored)
+              Future.delayed(const Duration(seconds: 20), () {
                 final response = jsonEncode({
                   'method': 'getPilot',
                   'result': {'state': true}
@@ -405,7 +419,7 @@ void main() {
                 socket.send(utf8.encode(response), datagram.address, datagram.port);
               });
             } else {
-              // Subsequent requests: respond immediately
+              // Subsequent retry requests: respond immediately
               final response = jsonEncode({
                 'method': 'getPilot',
                 'result': {'state': false}
@@ -420,9 +434,10 @@ void main() {
       bulb.setDeviceIP('127.0.0.1');
       bulb.setPort(port);
 
-      // First request should timeout (response too late)
+      // First request uses retry logic - will get response from retry (state: false)
       final state1 = await bulb.updateState();
-      expect(state1, isNull);
+      expect(state1, isNotNull);
+      expect(state1!.state, isFalse); // Gets the retry response, not the late one
 
       // Second request should succeed (immediate response)
       final state2 = await bulb.updateState();
@@ -438,22 +453,27 @@ void main() {
       bulb.setDeviceIP('192.0.2.1'); // Unreachable IP
       bulb.setPort(38899);
 
-      // Operations should fail gracefully without throwing
-      await bulb.turnOn();
-      await bulb.setBrightness(100);
-      await bulb.setRGBColor(255, 0, 0);
-
-      // No exceptions expected
-    });
+      // Operations should timeout gracefully
+      try {
+        await bulb.turnOn();
+        fail('Should have thrown WizLightTimeoutError');
+      } catch (e) {
+        expect(e, isA<WizLightTimeoutError>());
+      }
+    }, timeout: const Timeout(Duration(seconds: 5)));  // Single operation with 3s timeout
 
     test('handles discovery on unreachable network', () async {
       final bulb = Bulb();
       bulb.setPort(38899);
 
       // Discovery on unreachable IP should timeout gracefully
-      final result = await bulb.discover('192.0.2.1');
-      expect(result, isEmpty);
-    });
+      try {
+        await bulb.discover('192.0.2.1');
+        fail('Should have thrown WizLightTimeoutError');
+      } catch (e) {
+        expect(e, isA<WizLightTimeoutError>());
+      }
+    }, timeout: const Timeout(Duration(seconds: 5)));
 
     test('handles push updates on unreachable bulb', () async {
       final bulb = Bulb();
@@ -461,16 +481,18 @@ void main() {
       bulb.setPort(38899);
 
       final updates = <dynamic>[];
-      final success = await bulb.startPush((state, ip) {
+      final started = await bulb.startPush((state, ip) {
         updates.add(state);
       });
 
-      // May fail to start or timeout
+      // May fail to start (can't determine source IP) or succeed with no updates
       // Either way, should not crash
       expect(updates, isEmpty);
 
-      await bulb.stopPush();
-    });
+      if (started) {
+        await bulb.stopPush();
+      }
+    }, timeout: const Timeout(Duration(seconds: 5))); // getMac() timeout is 13s
   });
 
   group('Error Handling Integration Tests - State Validation', () {

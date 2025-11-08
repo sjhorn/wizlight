@@ -17,7 +17,7 @@ void main() async {
   print('Discovering bulbs...');
   final discovered = await discoverBulbs(
     broadcastAddress: '192.168.1.255',
-    waitTime: Duration(seconds: 5),
+    waitTime: const Duration(seconds: 5),
   );
 
   if (discovered.isEmpty) {
@@ -70,7 +70,7 @@ void main() async {
   print('Waiting 10 seconds to demonstrate push updates...\n');
 
   // Wait a bit to see push updates from manual changes
-  await Future.delayed(Duration(seconds: 10));
+  await Future.delayed(const Duration(seconds: 10));
 
   // Now programmatically trigger some changes
   if (bulbs.isNotEmpty) {
@@ -81,39 +81,39 @@ void main() async {
     
     print('Test 1: Turning ON bulb at $testIp...');
     await testBulb.turnOn();
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     
     print('\nTest 2: Setting brightness to 50%...');
     var builder = PilotBuilder()..brightness = 128;
     await testBulb.turnOn(builder);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     
     print('\nTest 3: Setting to warm white (2700K)...');
     builder = PilotBuilder()
       ..brightness = 128
       ..colorTemp = 2700;
     await testBulb.turnOn(builder);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     
     print('\nTest 4: Setting to RGB red...');
     builder = PilotBuilder()..setRgb(255, 0, 0);
     await testBulb.turnOn(builder);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     
     print('\nTest 5: Setting to RGB blue...');
     builder = PilotBuilder()..setRgb(0, 0, 255);
     await testBulb.turnOn(builder);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     
     print('\nTest 6: Turning OFF bulb...');
     await testBulb.turnOff();
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
   }
 
   // Keep listening for a bit more
   print('\nWaiting 5 more seconds for any manual changes...');
   print('(Try using the wall switch or WiZ app now!)\n');
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
   // Cleanup
   print('\nStopping push updates...');

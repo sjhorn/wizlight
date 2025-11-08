@@ -90,6 +90,9 @@ class PushManager {
   /// Registration message sent to bulbs
   Map<String, dynamic>? get registerMsg => _registerMsg;
 
+  /// The actual port being listened on (useful for testing with port 0)
+  int? get actualListenPort => _socket?.port;
+
   /// Sets the discovery callback
   ///
   /// Called when a bulb sends a firstBeat message (new device discovered).

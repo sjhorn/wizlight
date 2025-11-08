@@ -349,7 +349,16 @@ class FakeBulb {
     },
   };
 
+  // Registered push listener (IP and port for sending syncPilot)
+  String? _registeredPhoneIp;
+  int _pushListenPort = 38900; // Default push listen port
+
   FakeBulb(this.config);
+
+  /// Set the push listen port (for testing)
+  void setPushListenPort(int port) {
+    _pushListenPort = port;
+  }
 
   /// Start the fake bulb server
   Future<int> start() async {
@@ -411,7 +420,7 @@ class FakeBulb {
           _handleGetPower(address, port);
           break;
         case 'registration':
-          _handleRegistration(address, port);
+          _handleRegistration(json, address, port);
           break;
         case 'getDevInfo':
           _handleGetDevInfo(address, port);
@@ -439,6 +448,9 @@ class FakeBulb {
       params.forEach((key, value) {
         result[key] = value;
       });
+
+      // Send push notification to registered clients
+      _sendPushNotification();
     }
 
     _sendResponse({
@@ -457,7 +469,7 @@ class FakeBulb {
   void _handleGetSystemConfig(InternetAddress address, int port) {
     _sendResponse(config.systemConfig, address, port);
     // Simulate duplicate late response (like real bulbs sometimes do)
-    Future.delayed(Duration(milliseconds: 50), () {
+    Future.delayed(const Duration(milliseconds: 50), () {
       if (_running) {
         _sendResponse(config.systemConfig, address, port);
       }
@@ -486,7 +498,19 @@ class FakeBulb {
   }
 
   /// Handle registration command (for push updates)
-  void _handleRegistration(InternetAddress address, int port) {
+  void _handleRegistration(
+      Map<String, dynamic> json, InternetAddress address, int port) {
+    // Extract phoneIp from registration params
+    final params = json['params'] as Map<String, dynamic>?;
+    final phoneIp = params?['phoneIp'] as String?;
+
+    // Store the registered client info for push updates
+    // Real bulbs send syncPilot to the phoneIp on port 38900 (push listen port)
+    // NOT to the ephemeral port that sent the registration
+    if (phoneIp != null) {
+      _registeredPhoneIp = phoneIp;
+    }
+
     _sendResponse({
       'method': 'registration',
       'env': 'pro',
@@ -507,6 +531,25 @@ class FakeBulb {
       Map<String, dynamic> response, InternetAddress address, int port) {
     final data = utf8.encode(jsonEncode(response));
     _socket.send(data, address, port);
+  }
+
+  /// Send push notification (syncPilot) to registered client
+  void _sendPushNotification() {
+    if (_registeredPhoneIp == null) {
+      return; // No registered client
+    }
+
+    // Send syncPilot message with current state
+    final result = _pilotState['result'] as Map<String, dynamic>;
+    final syncPilot = {
+      'method': 'syncPilot',
+      'env': 'pro',
+      'params': Map<String, dynamic>.from(result),
+    };
+
+    final data = utf8.encode(jsonEncode(syncPilot));
+    final targetIp = InternetAddress(_registeredPhoneIp!);
+    _socket.send(data, targetIp, _pushListenPort);
   }
 
   /// Get current pilot state (for testing assertions)
@@ -532,8 +575,12 @@ class FakeBulb {
 /// Returns the bulb instance and its port
 Future<(FakeBulb, int)> startupBulb({
   BulbConfig config = BulbConfigs.rgbBulb,
+  int? pushListenPort,
 }) async {
   final bulb = FakeBulb(config);
+  if (pushListenPort != null) {
+    bulb.setPushListenPort(pushListenPort);
+  }
   final port = await bulb.start();
   return (bulb, port);
 }

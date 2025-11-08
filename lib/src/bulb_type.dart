@@ -279,7 +279,7 @@ class BulbType {
             'Warning: Unknown typeId: $typeId, assuming DW. Please report this bulb type.');
       }
     } else {
-      throw WizLightNotKnownBulb(
+      throw const WizLightNotKnownBulb(
           'The bulb type could not be determined from module name or type_id');
     }
 

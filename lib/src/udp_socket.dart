@@ -27,6 +27,16 @@ const double defaultFirstSendInterval = 0.75;
 /// Maximum backoff multiplier in seconds
 const int defaultMaxBackoff = 3;
 
+/// Test-only: Override default timeout for faster test execution
+/// Set to a positive value to reduce timeout during testing (e.g., 3 seconds)
+/// Set to null to use production defaults
+int? testTimeout;
+
+/// Test-only: Override retry count for faster test execution
+/// Set to a positive value to reduce retries during testing (e.g., 3 attempts)
+/// Set to null to use production defaults
+int? testMaxSendDatagrams;
+
 /// Maximum buffer size for UDP messages
 const int maxLineSize = 4096;
 
@@ -57,16 +67,17 @@ class UDPSocket {
 
   /// Creates a new UDP socket instance with configurable retry parameters
   ///
-  /// [timeout] - Total timeout in seconds (default: 13)
-  /// [maxSendDatagrams] - Maximum retry attempts (default: 6)
+  /// [timeout] - Total timeout in seconds (default: 13, or testTimeout if set)
+  /// [maxSendDatagrams] - Maximum retry attempts (default: 6, or testMaxSendDatagrams if set)
   /// [firstSendInterval] - Initial retry delay in seconds (default: 0.75)
   /// [maxBackoff] - Maximum backoff multiplier (default: 3)
   UDPSocket({
-    this.timeout = defaultTimeout,
-    this.maxSendDatagrams = defaultMaxSendDatagrams,
+    int? timeout,
+    int? maxSendDatagrams,
     this.firstSendInterval = defaultFirstSendInterval,
     this.maxBackoff = defaultMaxBackoff,
-  });
+  })  : timeout = timeout ?? testTimeout ?? defaultTimeout,
+        maxSendDatagrams = maxSendDatagrams ?? testMaxSendDatagrams ?? defaultMaxSendDatagrams;
 
   /// Sends a UDP command with progressive backoff retry
   ///
@@ -106,7 +117,6 @@ class UDPSocket {
       final completer = Completer<(String, String)>();
       StreamSubscription<RawSocketEvent>? subscription;
       Timer? overallTimeout;
-      Timer? retryTimer;
       bool responseReceived = false;
 
       // Overall timeout to prevent hanging forever
@@ -117,7 +127,6 @@ class UDPSocket {
           completer.completeError(WizLightTimeoutError(
               'The request to $targetIp timed out after $maxSendDatagrams attempts'));
         }
-        retryTimer?.cancel();
         subscription?.cancel();
         socket?.close();
       });
@@ -125,7 +134,7 @@ class UDPSocket {
       // Listen for responses
       subscription = socket.listen((event) {
         if (event == RawSocketEvent.read && !responseReceived) {
-          final datagram = socket!.receive();
+          final datagram = socket?.receive();
           if (datagram != null && !completer.isCompleted) {
             final response = utf8.decode(datagram.data);
             final senderIp = captureSenderIp ? datagram.address.address : '';
@@ -135,7 +144,6 @@ class UDPSocket {
 
             responseReceived = true;
             overallTimeout?.cancel();
-            retryTimer?.cancel();
             subscription?.cancel();
             socket?.close();
             completer.complete((response, senderIp));

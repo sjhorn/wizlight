@@ -44,7 +44,7 @@ void main() async {
       ..brightness = 127
       ..colorTemp = 2700;
     await bulb.turnOn(builder1);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     // Change to cool white
     print('   Changing to: Cool white, 6500K, 75% brightness');
@@ -52,7 +52,7 @@ void main() async {
       ..brightness = 191
       ..colorTemp = 6500;
     await bulb.turnOn(builder2);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     // 4. STATE-AWARE TOGGLE
     print('\n4. Demonstrating state-aware toggle...');
@@ -61,14 +61,14 @@ void main() async {
 
     print('   Toggling with lightSwitch()...');
     await bulb.lightSwitch(); // Will turn off since it's on
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
 
     final state2 = await bulb.updateState();
     print('   New state: ${state2?.state == true ? "ON" : "OFF"}');
 
     print('   Toggling again...');
     await bulb.lightSwitch(); // Will turn on since it's off
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     print('');
 
     // 5. TYPED STATE ACCESS
@@ -94,19 +94,19 @@ void main() async {
     // RGB (3 channels)
     print('   Setting RGB red...');
     await bulb.setRGBColor(255, 0, 0);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     // If bulb supports RGBW, try it
     if (bulbType?.features.color == true) {
       print('   Setting RGBW: Purple with warm white accent...');
       await bulb.setRgbw(128, 0, 128, 100);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
     }
 
     // Individual white control
     print('   Setting warm white only...');
     await bulb.setWarmWhite(200);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     print('');
 
     // 7. SCENES WITH SPEED
@@ -116,14 +116,14 @@ void main() async {
       ..scene = 1 // Ocean
       ..speed = 50; // Slow
     await bulb.turnOn(sceneBuilder);
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3));
 
     print('   Changing to fast speed...');
     final fastBuilder = PilotBuilder()
       ..scene = 1 // Keep Ocean
       ..speed = 200; // Fast
     await bulb.turnOn(fastBuilder);
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3));
     print('');
 
     // 8. MAC ADDRESS

@@ -169,12 +169,12 @@ void main() async {
       await bulb.turnOn();
     }
 
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     if (features.effect) {
       print('✓ Bulb supports effects - setting Ocean scene');
       await bulb.setScene(1); // Ocean
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(const Duration(seconds: 3));
     }
 
     print('\nTurning off...');

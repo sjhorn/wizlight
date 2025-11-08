@@ -17,7 +17,7 @@ void main() async {
   print('Discovering bulbs...');
   final discovered = await discoverBulbs(
     broadcastAddress: '192.168.1.255',
-    waitTime: Duration(seconds: 5),
+    waitTime: const Duration(seconds: 5),
   );
 
   if (discovered.isEmpty) {
@@ -75,7 +75,7 @@ void main() async {
   // Keep monitoring indefinitely
   try {
     while (true) {
-      await Future.delayed(Duration(seconds: 60));
+      await Future.delayed(const Duration(seconds: 60));
       print('Still monitoring... (${DateTime.now()})');
     }
   } catch (e) {

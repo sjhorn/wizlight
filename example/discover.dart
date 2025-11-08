@@ -8,7 +8,7 @@ void main() async {
   print('Discovering bulbs...');
   final bulbs = await discoverBulbs(
     broadcastAddress: '192.168.1.255', // Change to your network
-    waitTime: Duration(seconds: 5),
+    waitTime: const Duration(seconds: 5),
   );
 
   if (bulbs.isEmpty) {
@@ -29,7 +29,7 @@ void main() async {
   await bulb.turnOn();
 
   print('Waiting 3 seconds...');
-  await Future.delayed(Duration(seconds: 3));
+  await Future.delayed(const Duration(seconds: 3));
 
   print('Turning off bulb...');
   await bulb.turnOff();

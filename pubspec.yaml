@@ -1,5 +1,5 @@
 name: wizlight
-description: A comprehensive Dart package for controlling WiZ smart devices over UDP. Complete port of pywizlight with push updates, extended color modes, capability detection, and support for all WiZ device types.
+description: A dart package for controlling WiZ smart devices over UDP.
 version: 2.0.0
 homepage: https://github.com/sjhorn/wizlight
 repository: https://github.com/sjhorn/wizlight
@@ -12,5 +12,5 @@ dependencies:
   logging: ^1.2.0
 
 dev_dependencies:
-  test: ^1.25.0
   lints: ^3.0.0
+  test: ^1.25.0

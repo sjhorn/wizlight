@@ -17,52 +17,52 @@ void main() async {
   // Example 1: Turn the light on
   print('1. Turning light ON...');
   await bulb.toggleLight(true);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Example 2: Set brightness to 50%
   print('2. Setting brightness to 50%...');
   await bulb.setBrightness(50);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Example 3: Set brightness to 100%
   print('3. Setting brightness to 100%...');
   await bulb.setBrightness(100);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Example 4: Set RGB color to red
   print('4. Setting color to RED...');
   await bulb.setRGBColor(255, 0, 0);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Example 5: Set RGB color to green
   print('5. Setting color to GREEN...');
   await bulb.setRGBColor(0, 255, 0);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Example 6: Set RGB color to blue
   print('6. Setting color to BLUE...');
   await bulb.setRGBColor(0, 0, 255);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Example 7: Set color temperature (warm white)
   print('7. Setting color temperature to 2700K (warm white)...');
   await bulb.setColorTemp(2700);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Example 8: Set color temperature (cool white)
   print('8. Setting color temperature to 6500K (cool white)...');
   await bulb.setColorTemp(6500);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Example 9: Set a scene (Ocean = scene 1)
   print('9. Setting scene to Ocean (scene 1)...');
   await bulb.setScene(1);
-  await Future.delayed(Duration(seconds: 3));
+  await Future.delayed(const Duration(seconds: 3));
 
   // Example 10: Set animation speed
   print('10. Setting animation speed to 50%...');
   await bulb.setSpeed(50);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Example 11: Get current status
   print('11. Getting current bulb status...');
@@ -125,7 +125,7 @@ void scenesExample() async {
   for (var sceneId = 1; sceneId <= 5; sceneId++) {
     print('Setting scene $sceneId...');
     await bulb.setScene(sceneId);
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3));
   }
 
   bulb.close();

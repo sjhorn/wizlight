@@ -9,9 +9,22 @@ import 'package:test/test.dart';
 import 'package:wizlight/src/bulb.dart';
 import 'package:wizlight/src/exceptions.dart';
 import 'package:wizlight/src/push_manager.dart';
+import 'package:wizlight/src/udp_socket.dart';
 import '../helpers/fake_bulb.dart';
 
 void main() {
+  // Set up faster timeouts for testing
+  setUpAll(() {
+    testTimeout = 3; // 3 seconds instead of 13
+    testMaxSendDatagrams = 3; // 3 retries instead of 6
+  });
+
+  // Clean up after all tests
+  tearDownAll(() {
+    testTimeout = null;
+    testMaxSendDatagrams = null;
+  });
+
   group('Timeout and Retry Integration Tests - Basic Timeout', () {
     test('operation times out when no response received', () async {
       // Create socket that receives but never responds
@@ -352,7 +365,7 @@ void main() {
       }
 
       socket.close();
-    }, timeout: Timeout(Duration(seconds: 30)));
+    }, timeout: const Timeout(Duration(seconds: 10)));
 
     test('immediate response skips remaining retries', () async {
       final socket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 0);
@@ -485,14 +498,12 @@ void main() {
       final socket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 0);
       final port = socket.port;
 
-      var requestCount = 0;
       final methodCounts = <String, int>{};
 
       socket.listen((event) {
         if (event == RawSocketEvent.read) {
           final datagram = socket.receive();
           if (datagram != null) {
-            requestCount++;
             final request = jsonDecode(utf8.decode(datagram.data));
             final method = request['method'] as String;
 
@@ -590,7 +601,7 @@ void main() {
       expect(pushStarted, isTrue, reason: 'Push manager should start successfully with port 0');
 
       // Wait for some registration attempts to occur
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(const Duration(seconds: 3));
 
       // Should have attempted registration
       expect(registrationCount, greaterThanOrEqualTo(1));
@@ -620,14 +631,11 @@ void main() {
       await Future.wait(futures);
 
       // No assertions needed - just verify it completes
-    }, timeout: Timeout(Duration(seconds: 90)));
+    }, timeout: const Timeout(Duration(seconds: 20)));
 
     test('handles timeout during state change', () async {
       final socket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 0);
       final port = socket.port;
-
-      var setPilotCount = 0;
-      var getPilotCount = 0;
 
       socket.listen((event) {
         if (event == RawSocketEvent.read) {
@@ -637,10 +645,8 @@ void main() {
             final method = request['method'];
 
             if (method == 'setPilot') {
-              setPilotCount++;
               // Never respond to setPilot - force timeout
             } else if (method == 'getPilot') {
-              getPilotCount++;
               // Respond to getPilot immediately
               final response = jsonEncode({
                 'method': 'getPilot',

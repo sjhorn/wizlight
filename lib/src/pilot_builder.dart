@@ -118,11 +118,8 @@ class PilotBuilder {
   ///
   /// Throws [ArgumentError] if scene name is not recognized.
   set sceneName(String name) {
-    final sceneId = getSceneId(name);
-    if (sceneId == null) {
-      throw ArgumentError('Unknown scene name: $name');
-    }
-    pilotParams['sceneId'] = sceneId;
+    // getSceneId already throws ArgumentError for unknown scenes
+    pilotParams['sceneId'] = getSceneId(name);
   }
 
   /// Sets the effect/animation speed

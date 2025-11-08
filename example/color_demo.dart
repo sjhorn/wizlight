@@ -17,7 +17,7 @@ void main() async {
   print('Step 1: Discovering WiZ lights...');
   final discovered = await discoverBulbs(
     broadcastAddress: '192.168.1.255',
-    waitTime: Duration(seconds: 5),
+    waitTime: const Duration(seconds: 5),
   );
 
   if (discovered.isEmpty) {
@@ -66,7 +66,7 @@ void main() async {
   }
 
   // Give push updates a moment to register
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Step 3: Cycle through RGB colors
   print('Step 3: Cycling through RGB colors...\n');
@@ -76,21 +76,21 @@ void main() async {
   var builder = PilotBuilder()..setRgb(255, 0, 0);
   await bulb.turnOn(builder);
   print('✓ Light is now RED');
-  await Future.delayed(Duration(seconds: 3));
+  await Future.delayed(const Duration(seconds: 3));
 
   // Green
   print('\nSetting color to GREEN...');
   builder = PilotBuilder()..setRgb(0, 255, 0);
   await bulb.turnOn(builder);
   print('✓ Light is now GREEN');
-  await Future.delayed(Duration(seconds: 3));
+  await Future.delayed(const Duration(seconds: 3));
 
   // Blue
   print('\nSetting color to BLUE...');
   builder = PilotBuilder()..setRgb(0, 0, 255);
   await bulb.turnOn(builder);
   print('✓ Light is now BLUE');
-  await Future.delayed(Duration(seconds: 3));
+  await Future.delayed(const Duration(seconds: 3));
 
   // Bonus: Cycle through more colors
   print('\nBonus: Cycling through more colors...\n');
@@ -108,7 +108,7 @@ void main() async {
     builder = PilotBuilder()..setRgb(rgb[0], rgb[1], rgb[2]);
     await bulb.turnOn(builder);
     print('✓ Light is now ${color['name']}');
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
   }
 
   // Return to warm white
@@ -120,7 +120,7 @@ void main() async {
   print('✓ Light returned to warm white (2700K)');
 
   // Wait a moment to see the final state
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
   // Cleanup
   print('\nCleaning up...');

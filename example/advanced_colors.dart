@@ -30,19 +30,19 @@ void main() async {
     print('1. RGB (3 channels) - Standard color control');
     print('   Red (255, 0, 0)');
     await bulb.setRGBColor(255, 0, 0);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     print('   Green (0, 255, 0)');
     await bulb.setRGBColor(0, 255, 0);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     print('   Blue (0, 0, 255)');
     await bulb.setRGBColor(0, 0, 255);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     print('   Purple (128, 0, 128)');
     await bulb.setRGBColor(128, 0, 128);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     print('');
 
     // 2. RGBW (4 CHANNELS) - RGB + Warm White
@@ -52,19 +52,19 @@ void main() async {
 
       print('   Red with warm white accent');
       await bulb.setRgbw(255, 0, 0, 100);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
       print('   Orange with warm white (sunset effect)');
       await bulb.setRgbw(255, 100, 0, 150);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
       print('   Purple with soft warm glow');
       await bulb.setRgbw(128, 0, 128, 80);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
       print('   Pure warm white (RGB off)');
       await bulb.setRgbw(0, 0, 0, 255);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
       print('');
     }
 
@@ -75,19 +75,19 @@ void main() async {
 
       print('   Red with balanced whites');
       await bulb.setRgbww(255, 0, 0, 100, 100);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
       print('   Blue with cool white accent');
       await bulb.setRgbww(0, 0, 255, 150, 50);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
       print('   Green with warm white accent');
       await bulb.setRgbww(0, 255, 0, 50, 150);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
       print('   Balanced daylight (all LEDs)');
       await bulb.setRgbww(200, 200, 200, 150, 150);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
       print('');
     }
 
@@ -97,19 +97,19 @@ void main() async {
 
     print('   Warm white only (2700K feeling)');
     await bulb.setWarmWhite(255);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     print('   Medium warm white');
     await bulb.setWarmWhite(150);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     print('   Cold white only (6500K feeling)');
     await bulb.setColdWhite(255);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     print('   Medium cold white');
     await bulb.setColdWhite(150);
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     print('');
 
     // 5. COLOR TEMPERATURE (TRADITIONAL METHOD)
@@ -126,21 +126,21 @@ void main() async {
           ..colorTemp = kelvinRange.min
           ..brightness = 200;
         await bulb.turnOn(warmBuilder);
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
 
         print('   Neutral white (4000K)');
         final neutralBuilder = PilotBuilder()
           ..colorTemp = 4000
           ..brightness = 200;
         await bulb.turnOn(neutralBuilder);
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
 
         print('   Cool white (${kelvinRange.max}K)');
         final coolBuilder = PilotBuilder()
           ..colorTemp = kelvinRange.max
           ..brightness = 200;
         await bulb.turnOn(coolBuilder);
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
       }
       print('');
     }
@@ -154,7 +154,7 @@ void main() async {
       ..brightness = 100
       ..speed = 50;
     await bulb.turnOn(complexBuilder);
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3));
     print('');
 
     // 7. READING CURRENT COLOR STATE

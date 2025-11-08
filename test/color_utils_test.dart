@@ -7,21 +7,21 @@ import 'package:wizlight/src/color_utils.dart';
 void main() {
   group('RGBColor', () {
     test('constructor and getters', () {
-      final color = RGBColor(255, 128, 0);
+      final color = const RGBColor(255, 128, 0);
       expect(color.red, equals(255));
       expect(color.green, equals(128));
       expect(color.blue, equals(0));
     });
 
     test('toString', () {
-      final color = RGBColor(255, 128, 0);
+      final color = const RGBColor(255, 128, 0);
       expect(color.toString(), equals('RGB(255, 128, 0)'));
     });
 
     test('equality', () {
-      final color1 = RGBColor(255, 128, 0);
-      final color2 = RGBColor(255, 128, 0);
-      final color3 = RGBColor(255, 128, 1);
+      final color1 = const RGBColor(255, 128, 0);
+      final color2 = const RGBColor(255, 128, 0);
+      final color3 = const RGBColor(255, 128, 1);
 
       expect(color1, equals(color2));
       expect(color1, isNot(equals(color3)));
@@ -30,21 +30,21 @@ void main() {
 
   group('HSVColor', () {
     test('constructor and getters', () {
-      final color = HSVColor(180.0, 50.0, 75.0);
+      final color = const HSVColor(180.0, 50.0, 75.0);
       expect(color.hue, equals(180.0));
       expect(color.saturation, equals(50.0));
       expect(color.value, equals(75.0));
     });
 
     test('toString', () {
-      final color = HSVColor(180.5, 50.3, 75.7);
+      final color = const HSVColor(180.5, 50.3, 75.7);
       expect(color.toString(), equals('HSV(180.5, 50.3, 75.7)'));
     });
 
     test('equality with tolerance', () {
-      final color1 = HSVColor(180.0, 50.0, 75.0);
-      final color2 = HSVColor(180.0001, 50.0001, 75.0001);
-      final color3 = HSVColor(180.1, 50.0, 75.0);
+      final color1 = const HSVColor(180.0, 50.0, 75.0);
+      final color2 = const HSVColor(180.0001, 50.0001, 75.0001);
+      final color3 = const HSVColor(180.1, 50.0, 75.0);
 
       expect(color1, equals(color2)); // Within tolerance
       expect(color1, isNot(equals(color3))); // Outside tolerance
@@ -53,7 +53,7 @@ void main() {
 
   group('RGB to HSV Conversion', () {
     test('pure red', () {
-      final rgb = RGBColor(255, 0, 0);
+      final rgb = const RGBColor(255, 0, 0);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.hue, closeTo(0.0, 0.1));
@@ -62,7 +62,7 @@ void main() {
     });
 
     test('pure green', () {
-      final rgb = RGBColor(0, 255, 0);
+      final rgb = const RGBColor(0, 255, 0);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.hue, closeTo(120.0, 0.1));
@@ -71,7 +71,7 @@ void main() {
     });
 
     test('pure blue', () {
-      final rgb = RGBColor(0, 0, 255);
+      final rgb = const RGBColor(0, 0, 255);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.hue, closeTo(240.0, 0.1));
@@ -80,7 +80,7 @@ void main() {
     });
 
     test('black', () {
-      final rgb = RGBColor(0, 0, 0);
+      final rgb = const RGBColor(0, 0, 0);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.hue, closeTo(0.0, 0.1));
@@ -89,7 +89,7 @@ void main() {
     });
 
     test('white', () {
-      final rgb = RGBColor(255, 255, 255);
+      final rgb = const RGBColor(255, 255, 255);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.hue, closeTo(0.0, 0.1));
@@ -98,7 +98,7 @@ void main() {
     });
 
     test('gray (50%)', () {
-      final rgb = RGBColor(128, 128, 128);
+      final rgb = const RGBColor(128, 128, 128);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.saturation, closeTo(0.0, 0.1));
@@ -106,7 +106,7 @@ void main() {
     });
 
     test('cyan', () {
-      final rgb = RGBColor(0, 255, 255);
+      final rgb = const RGBColor(0, 255, 255);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.hue, closeTo(180.0, 0.1));
@@ -115,7 +115,7 @@ void main() {
     });
 
     test('magenta', () {
-      final rgb = RGBColor(255, 0, 255);
+      final rgb = const RGBColor(255, 0, 255);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.hue, closeTo(300.0, 0.1));
@@ -124,7 +124,7 @@ void main() {
     });
 
     test('yellow', () {
-      final rgb = RGBColor(255, 255, 0);
+      final rgb = const RGBColor(255, 255, 0);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.hue, closeTo(60.0, 0.1));
@@ -133,7 +133,7 @@ void main() {
     });
 
     test('orange', () {
-      final rgb = RGBColor(255, 128, 0);
+      final rgb = const RGBColor(255, 128, 0);
       final hsv = rgbToHsv(rgb);
 
       expect(hsv.hue, closeTo(30.12, 0.5));
@@ -144,7 +144,7 @@ void main() {
 
   group('HSV to RGB Conversion', () {
     test('pure red (hue 0)', () {
-      final hsv = HSVColor(0.0, 100.0, 100.0);
+      final hsv = const HSVColor(0.0, 100.0, 100.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(255));
@@ -153,7 +153,7 @@ void main() {
     });
 
     test('pure green (hue 120)', () {
-      final hsv = HSVColor(120.0, 100.0, 100.0);
+      final hsv = const HSVColor(120.0, 100.0, 100.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(0));
@@ -162,7 +162,7 @@ void main() {
     });
 
     test('pure blue (hue 240)', () {
-      final hsv = HSVColor(240.0, 100.0, 100.0);
+      final hsv = const HSVColor(240.0, 100.0, 100.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(0));
@@ -171,7 +171,7 @@ void main() {
     });
 
     test('black (value 0)', () {
-      final hsv = HSVColor(0.0, 100.0, 0.0);
+      final hsv = const HSVColor(0.0, 100.0, 0.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(0));
@@ -180,7 +180,7 @@ void main() {
     });
 
     test('white (saturation 0, value 100)', () {
-      final hsv = HSVColor(0.0, 0.0, 100.0);
+      final hsv = const HSVColor(0.0, 0.0, 100.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(255));
@@ -189,7 +189,7 @@ void main() {
     });
 
     test('gray (saturation 0, value 50)', () {
-      final hsv = HSVColor(0.0, 0.0, 50.0);
+      final hsv = const HSVColor(0.0, 0.0, 50.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(128));
@@ -198,7 +198,7 @@ void main() {
     });
 
     test('cyan (hue 180)', () {
-      final hsv = HSVColor(180.0, 100.0, 100.0);
+      final hsv = const HSVColor(180.0, 100.0, 100.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(0));
@@ -207,7 +207,7 @@ void main() {
     });
 
     test('magenta (hue 300)', () {
-      final hsv = HSVColor(300.0, 100.0, 100.0);
+      final hsv = const HSVColor(300.0, 100.0, 100.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(255));
@@ -216,7 +216,7 @@ void main() {
     });
 
     test('yellow (hue 60)', () {
-      final hsv = HSVColor(60.0, 100.0, 100.0);
+      final hsv = const HSVColor(60.0, 100.0, 100.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(255));
@@ -225,7 +225,7 @@ void main() {
     });
 
     test('desaturated red', () {
-      final hsv = HSVColor(0.0, 50.0, 100.0);
+      final hsv = const HSVColor(0.0, 50.0, 100.0);
       final rgb = hsvToRgb(hsv);
 
       expect(rgb.red, equals(255));
@@ -236,7 +236,7 @@ void main() {
 
   group('RGB ↔ HSV Round-trip Conversion', () {
     test('round trip preserves color', () {
-      final originalRgb = RGBColor(200, 100, 50);
+      final originalRgb = const RGBColor(200, 100, 50);
       final hsv = rgbToHsv(originalRgb);
       final roundTripRgb = hsvToRgb(hsv);
 
@@ -247,14 +247,14 @@ void main() {
 
     test('round trip multiple colors', () {
       final testColors = [
-        RGBColor(255, 0, 0),
-        RGBColor(0, 255, 0),
-        RGBColor(0, 0, 255),
-        RGBColor(255, 255, 0),
-        RGBColor(255, 0, 255),
-        RGBColor(0, 255, 255),
-        RGBColor(128, 64, 192),
-        RGBColor(200, 150, 100),
+        const RGBColor(255, 0, 0),
+        const RGBColor(0, 255, 0),
+        const RGBColor(0, 0, 255),
+        const RGBColor(255, 255, 0),
+        const RGBColor(255, 0, 255),
+        const RGBColor(0, 255, 255),
+        const RGBColor(128, 64, 192),
+        const RGBColor(200, 150, 100),
       ];
 
       for (final original in testColors) {
